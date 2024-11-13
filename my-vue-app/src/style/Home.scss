@@ -1,0 +1,96 @@
+.home {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    align-items: center;
+  }
+  
+  .header {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .hole_page {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .table-container {
+    width: 80%; 
+    height: 100%; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 28px;
+  }
+  
+  .responsive-table {
+    width: 100%;
+    max-height: 80vh; 
+    overflow-y: auto;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+  }
+  
+  .button_group {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    margin-top: 20px;
+  }
+  
+  /* Primary Button */
+  .browse_button {
+    width: 204px;
+    height: 48px;
+    background: #4310AE;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 19px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    box-shadow: 0px 6px 15px rgba(67, 16, 174, 0.12), inset 0px -1px 0px rgba(14, 14, 44, 0.4);
+    transition: background-color 0.3s;
+  }
+  
+  .character_button {
+    width: 204px;
+    height: 48px;
+    background: #EFEFFD;
+    color: #4310AE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 19px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .browse_button:hover {
+    background: #32108E; /* Darker shade on hover */
+  }
+  
+  .character_button:hover {
+    background: #E0E0F2; /* Slightly darker shade for a hover effect */
+  }
+  
