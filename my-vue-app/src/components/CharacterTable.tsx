@@ -23,24 +23,34 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [currentPage, setCurrentPage] = useState<number>(1); // הוספת מצב לניהול העמוד הנוכחי
+  const [totalPages, setTotalPages] = useState<number>(1); // הוספת מצב לניהול מספר העמודים הכולל
+  const [loadingMore, setLoadingMore] = useState<boolean>(false); // הוספת מצב לניהול טעינת עמודים נוספים
 
   useEffect(() => {
-    const fetchCharacters = async () => {
-      try {
-        const response = await axios.get('https://rickandmortyapi.com/api/character');
-        console.log(response.data.results); 
-        setCharacters(response.data.results);
-      } catch (err) {
-        setError('Error loading characters.');
-      } finally {
-        setLoading(false);
-      }
+    const fetchCharacters = async (page: number) => {
+        try {
+            const response = await axios.get(`https://rickandmortyapi.com/api/character?page=${page}`);
+            const newCharacters = response.data.results;
+
+            // Append only unique characters to avoid duplicates
+            setCharacters((prevCharacters) => {
+                const existingIds = new Set(prevCharacters.map((char) => char.id));
+                const filteredNewCharacters = newCharacters.filter((char) => !existingIds.has(char.id));
+                return [...prevCharacters, ...filteredNewCharacters];
+            });
+
+            setTotalPages(response.data.info.pages);
+        } catch (err) {
+            setError('Error loading characters.');
+        } finally {
+            setLoading(false);
+            setLoadingMore(false);
+        }
     };
-  
-    fetchCharacters();
-  }, []);
 
-
+    fetchCharacters(currentPage);
+}, [currentPage]);
 
   const handleRowClick = (id: number) => {
     setExpandedRows((prev) => {
@@ -54,11 +64,18 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery }) => {
     });
   };
 
+  const handleLoadMore = () => {
+    if (currentPage < totalPages) {
+      setLoadingMore(true);
+      setCurrentPage((prevPage) => prevPage + 1); 
+    }
+  };
+
   const filteredCharacters = characters.filter((character) =>
     character.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) return <p>Loading...</p>;
+  if (loading && currentPage === 1) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
   return (
@@ -92,6 +109,13 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery }) => {
           ))}
         </tbody>
       </table>
+      {currentPage < totalPages && ( 
+        <div className="load-more-container">
+          <button onClick={handleLoadMore} disabled={loadingMore}>
+            {loadingMore ? 'Loading...' : 'Load More'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
