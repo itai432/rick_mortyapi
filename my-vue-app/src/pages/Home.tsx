@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Logo from '../components/Logo';
 import Banner from '../components/Banner';
 import CharacterTable from '../components/CharacterTable';
 import ButtonGrupe from '../components/ButtonGrupe';
+import SearchBar from '../components/SearchBar';
 import '../style/Home.scss';
 
 const Home: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
   return (
     <div className="home">
       <div className="header">
@@ -15,8 +22,9 @@ const Home: React.FC = () => {
         <Logo />
       </div>
       <ButtonGrupe />
+      <SearchBar onSearch={handleSearch}></SearchBar>
       <div className="hole_page">
-        <CharacterTable />
+        <CharacterTable searchQuery={searchQuery} />
       </div>
     </div>
   );
