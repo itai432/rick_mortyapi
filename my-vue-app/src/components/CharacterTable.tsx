@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import CharacterDetails from './CharacterDetails';
-import '../style/CharacterTable.scss';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import CharacterDetails from "./CharacterDetails";
+import "../style/CharacterTable.scss";
 
 interface Character {
   id: number;
-  name: string; 
+  name: string;
   status: string;
   species: string;
   gender: string;
   origin: { name: string };
   image: string;
 }
-
 
 interface CharacterTableProps {
   searchQuery: string;
@@ -29,28 +28,32 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery }) => {
 
   useEffect(() => {
     const fetchCharacters = async (page: number) => {
-        try {
-            const response = await axios.get(`https://rickandmortyapi.com/api/character?page=${page}`);
-            const newCharacters = response.data.results;
+      try {
+        const response = await axios.get(
+          `https://rickandmortyapi.com/api/character?page=${page}`
+        );
+        const newCharacters = response.data.results;
 
-            // Append only unique characters to avoid duplicates
-            setCharacters((prevCharacters) => {
-                const existingIds = new Set(prevCharacters.map((char) => char.id));
-                const filteredNewCharacters = newCharacters.filter((char) => !existingIds.has(char.id));
-                return [...prevCharacters, ...filteredNewCharacters];
-            });
+        // Append only unique characters to avoid duplicates
+        setCharacters((prevCharacters) => {
+          const existingIds = new Set(prevCharacters.map((char) => char.id));
+          const filteredNewCharacters = newCharacters.filter(
+            (char) => !existingIds.has(char.id)
+          );
+          return [...prevCharacters, ...filteredNewCharacters];
+        });
 
-            setTotalPages(response.data.info.pages);
-        } catch (err) {
-            setError('Error loading characters.');
-        } finally {
-            setLoading(false);
-            setLoadingMore(false);
-        }
+        setTotalPages(response.data.info.pages);
+      } catch (err) {
+        setError("Error loading characters.");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
     };
 
     fetchCharacters(currentPage);
-}, [currentPage]);
+  }, [currentPage]);
 
   const handleRowClick = (id: number) => {
     setExpandedRows((prev) => {
@@ -67,7 +70,7 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery }) => {
   const handleLoadMore = () => {
     if (currentPage < totalPages) {
       setLoadingMore(true);
-      setCurrentPage((prevPage) => prevPage + 1); 
+      setCurrentPage((prevPage) => prevPage + 1);
     }
   };
 
@@ -108,14 +111,18 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery }) => {
             </React.Fragment>
           ))}
         </tbody>
-      </table>
-      {currentPage < totalPages && ( 
+      {currentPage < totalPages && (
         <div className="load-more-container">
-          <button onClick={handleLoadMore} disabled={loadingMore}>
-            {loadingMore ? 'Loading...' : 'Load More'}
+          <button
+            className="load-more-button"
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? "Loading..." : "Load More"}
           </button>
         </div>
       )}
+      </table>
     </div>
   );
 };
