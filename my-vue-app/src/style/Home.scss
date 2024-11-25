@@ -45,7 +45,6 @@
   .browse_button {
     width: 204px;
     height: 48px;
-    background: #4310AE;
     color: #FFFFFF;
     display: flex;
     align-items: center;
@@ -91,5 +90,33 @@
   
   .character_button:hover {
     background: #E0E0F2; 
+  }
+  
+
+  .button-group {
+    display: flex;
+  
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+  
+      &.active {
+        background-color: #5a47ff;
+        color: white;
+      }
+  
+      &:not(.active) {
+        background-color: #f0f0f0;
+        color: black;
+      }
+  
+      &:hover {
+        background-color: #ddd;
+      }
+    }
   }
   

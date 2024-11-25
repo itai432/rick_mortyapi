@@ -15,56 +15,69 @@ interface Character {
 
 interface CharacterTableProps {
   searchQuery: string;
+  searchById?: boolean; 
 }
 
-const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery }) => {
+const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery, searchById = false }) => {
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [character, setCharacter] = useState<Character | null>(null); 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-  const [currentPage, setCurrentPage] = useState<number>(1); // הוספת מצב לניהול העמוד הנוכחי
-  const [totalPages, setTotalPages] = useState<number>(1); // הוספת מצב לניהול מספר העמודים הכולל
-  const [loadingMore, setLoadingMore] = useState<boolean>(false); // הוספת מצב לניהול טעינת עמודים נוספים
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null); 
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
 
   useEffect(() => {
-    const fetchCharacters = async (page: number) => {
+    const fetchCharacters = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
-        const response = await axios.get(
-          `https://rickandmortyapi.com/api/character?page=${page}`
-        );
-        const newCharacters = response.data.results;
-
-        // Append only unique characters to avoid duplicates
-        setCharacters((prevCharacters) => {
-          const existingIds = new Set(prevCharacters.map((char) => char.id));
-          const filteredNewCharacters = newCharacters.filter(
-            (char) => !existingIds.has(char.id)
+        if (searchById && searchQuery) {
+          const response = await axios.get(
+            `https://rickandmortyapi.com/api/character/${searchQuery}`
           );
-          return [...prevCharacters, ...filteredNewCharacters];
-        });
+          setCharacter(response.data);
+          setCharacters([]);
+        } else if (searchQuery) {
+          const response = await axios.get(
+            `https://rickandmortyapi.com/api/character/?name=${searchQuery}`
+          );
+          setCharacters(response.data.results);
+          setCharacter(null);
+        } else {
+          const response = await axios.get(
+            `https://rickandmortyapi.com/api/character?page=${currentPage}`
+          );
+          const newCharacters = response.data.results;
 
-        setTotalPages(response.data.info.pages);
+          setCharacters((prevCharacters) => {
+            const existingIds = new Set(prevCharacters.map((char) => char.id));
+            const filteredNewCharacters = newCharacters.filter(
+              (char: any) => !existingIds.has(char.id)
+            );
+            return [...prevCharacters, ...filteredNewCharacters];
+          });
+
+          setTotalPages(response.data.info.pages);
+          setCharacter(null);
+        }
       } catch (err) {
         setError("Error loading characters.");
+        setCharacters([]);
+        setCharacter(null);
       } finally {
         setLoading(false);
         setLoadingMore(false);
       }
     };
 
-    fetchCharacters(currentPage);
-  }, [currentPage]);
+    fetchCharacters();
+  }, [searchQuery, searchById, currentPage]);
 
   const handleRowClick = (id: number) => {
-    setExpandedRows((prev) => {
-      const newExpandedRows = new Set(prev);
-      if (newExpandedRows.has(id)) {
-        newExpandedRows.delete(id);
-      } else {
-        newExpandedRows.add(id);
-      }
-      return newExpandedRows;
-    });
+    setExpandedRowId((prevId) => (prevId === id ? null : id));
   };
 
   const handleLoadMore = () => {
@@ -73,10 +86,6 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery }) => {
       setCurrentPage((prevPage) => prevPage + 1);
     }
   };
-
-  const filteredCharacters = characters.filter((character) =>
-    character.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   if (loading && currentPage === 1) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
@@ -93,7 +102,7 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery }) => {
           </tr>
         </thead>
         <tbody>
-          {filteredCharacters.map((character) => (
+          {character ? (
             <React.Fragment key={character.id}>
               <tr onClick={() => handleRowClick(character.id)}>
                 <td>{character.name}</td>
@@ -101,7 +110,7 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery }) => {
                 <td>{character.gender}</td>
                 <td>{character.origin.name}</td>
               </tr>
-              {expandedRows.has(character.id) && (
+              {expandedRowId === character.id && (
                 <tr className="expanded-row">
                   <td colSpan={4}>
                     <CharacterDetails character={character} />
@@ -109,9 +118,27 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery }) => {
                 </tr>
               )}
             </React.Fragment>
-          ))}
+          ) : (
+            characters.map((character) => (
+              <React.Fragment key={character.id}>
+                <tr onClick={() => handleRowClick(character.id)}>
+                  <td>{character.name}</td>
+                  <td>{character.status}</td>
+                  <td>{character.gender}</td>
+                  <td>{character.origin.name}</td>
+                </tr>
+                {expandedRowId === character.id && (
+                  <tr className="expanded-row">
+                    <td colSpan={4}>
+                      <CharacterDetails character={character} />
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))
+          )}
         </tbody>
-      {currentPage < totalPages && (
+      {!searchById && currentPage < totalPages && (
         <div className="load-more-container">
           <button
             className="load-more-button"

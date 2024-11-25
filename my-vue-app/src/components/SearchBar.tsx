@@ -3,35 +3,42 @@ import '../style/SearchBar.scss';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
+  placeholder?: string;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ onSearch, placeholder = 'Search...' }) => {
   const [query, setQuery] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newQuery = e.target.value;
     setQuery(e.target.value);
-    onSearch(newQuery);
   };
 
   const handleSearchClick = () => {
-    onSearch(query);
+    if (query.trim()) {
+      onSearch(query.trim());
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearchClick();
+    }
   };
 
   return (
     <div className="search-bar">
       <div className="search-input-container">
-          <span className="search-icon">🔍</span>
         <input
           type="text"
           value={query}
           onChange={handleInputChange}
-          placeholder="Search..."
+          onKeyPress={handleKeyPress}
+          placeholder={placeholder}
           className="search-input"
         />
       </div>
       <button onClick={handleSearchClick} className="search-button">
-        GO
+        Go
       </button>
     </div>
   );

@@ -1,0 +1,30 @@
+.button_group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .browse_button,
+  .character_button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #e0e0e0;
+    color: #333;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .browse_button.active,
+  .character_button.active {
+    background-color: #6a5acd; 
+    color: white;
+  }
+  
+  .browse_button:hover,
+  .character_button:hover {
+    background-color: #d0d0d0;
+  }
+  
