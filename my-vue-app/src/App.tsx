@@ -1,11 +1,14 @@
-import React from 'react';
-import Home from './pages/Home';
+import React from "react";
+import Home from "./pages/Home";
+import { SearchProvider } from "./context/SearchContext";
 
 const App: React.FC = () => {
   return (
-    <div className="app">
-      <Home />
-    </div>
+    <SearchProvider>
+      <div className="app">
+        <Home />
+      </div>
+    </SearchProvider>
   );
 };
 

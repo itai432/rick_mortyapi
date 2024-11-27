@@ -15,18 +15,20 @@ interface Character {
 
 interface CharacterTableProps {
   searchQuery: string;
-  searchById?: boolean; 
+  searchById?: boolean;
 }
 
-const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery, searchById = false }) => {
+const CharacterTable: React.FC<CharacterTableProps> = ({
+  searchQuery,
+  searchById = false,
+}) => {
   const [characters, setCharacters] = useState<Character[]>([]);
-  const [character, setCharacter] = useState<Character | null>(null); 
+  const [character, setCharacter] = useState<Character | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedRowId, setExpandedRowId] = useState<number | null>(null); 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null); 
 
   useEffect(() => {
     const fetchCharacters = async () => {
@@ -34,42 +36,25 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery, searchById
       setError(null);
 
       try {
-        if (searchById && searchQuery) {
-          const response = await axios.get(
-            `https://rickandmortyapi.com/api/character/${searchQuery}`
-          );
-          setCharacter(response.data);
-          setCharacters([]);
-        } else if (searchQuery) {
-          const response = await axios.get(
-            `https://rickandmortyapi.com/api/character/?name=${searchQuery}`
-          );
-          setCharacters(response.data.results);
-          setCharacter(null);
-        } else {
-          const response = await axios.get(
-            `https://rickandmortyapi.com/api/character?page=${currentPage}`
-          );
-          const newCharacters = response.data.results;
+        const response = await axios.get(
+          searchById && searchQuery
+            ? `https://rickandmortyapi.com/api/character/${searchQuery}`
+            : `https://rickandmortyapi.com/api/character?page=${currentPage}&name=${searchQuery}`
+        );
 
-          setCharacters((prevCharacters) => {
-            const existingIds = new Set(prevCharacters.map((char) => char.id));
-            const filteredNewCharacters = newCharacters.filter(
-              (char: any) => !existingIds.has(char.id)
-            );
-            return [...prevCharacters, ...filteredNewCharacters];
-          });
-
-          setTotalPages(response.data.info.pages);
-          setCharacter(null);
-        }
+        setCharacters(
+          searchById && searchQuery
+            ? [response.data] 
+            : response.data.results
+        );
+        setTotalPages(searchById ? 1 : response.data.info.pages);
+        setCharacter(null);
       } catch (err) {
         setError("Error loading characters.");
         setCharacters([]);
         setCharacter(null);
       } finally {
         setLoading(false);
-        setLoadingMore(false);
       }
     };
 
@@ -80,14 +65,15 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery, searchById
     setExpandedRowId((prevId) => (prevId === id ? null : id));
   };
 
-  const handleLoadMore = () => {
-    if (currentPage < totalPages) {
-      setLoadingMore(true);
+  const handlePageChange = (direction: "next" | "prev") => {
+    if (direction === "next" && currentPage < totalPages) {
       setCurrentPage((prevPage) => prevPage + 1);
+    } else if (direction === "prev" && currentPage > 1) {
+      setCurrentPage((prevPage) => prevPage - 1);
     }
   };
 
-  if (loading && currentPage === 1) return <p>Loading...</p>;
+  if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
   return (
@@ -102,9 +88,12 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery, searchById
           </tr>
         </thead>
         <tbody>
-          {character ? (
+          {characters.map((character) => (
             <React.Fragment key={character.id}>
-              <tr onClick={() => handleRowClick(character.id)}>
+              <tr
+                className="clickable-row"
+                onClick={() => handleRowClick(character.id)}
+              >
                 <td>{character.name}</td>
                 <td>{character.status}</td>
                 <td>{character.gender}</td>
@@ -118,38 +107,26 @@ const CharacterTable: React.FC<CharacterTableProps> = ({ searchQuery, searchById
                 </tr>
               )}
             </React.Fragment>
-          ) : (
-            characters.map((character) => (
-              <React.Fragment key={character.id}>
-                <tr onClick={() => handleRowClick(character.id)}>
-                  <td>{character.name}</td>
-                  <td>{character.status}</td>
-                  <td>{character.gender}</td>
-                  <td>{character.origin.name}</td>
-                </tr>
-                {expandedRowId === character.id && (
-                  <tr className="expanded-row">
-                    <td colSpan={4}>
-                      <CharacterDetails character={character} />
-                    </td>
-                  </tr>
-                )}
-              </React.Fragment>
-            ))
-          )}
+          ))}
         </tbody>
-      {!searchById && currentPage < totalPages && (
-        <div className="load-more-container">
-          <button
-            className="load-more-button"
-            onClick={handleLoadMore}
-            disabled={loadingMore}
-          >
-            {loadingMore ? "Loading..." : "Load More"}
-          </button>
-        </div>
-      )}
       </table>
+      <div className="pagination">
+        <button
+          onClick={() => handlePageChange("prev")}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() => handlePageChange("next")}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
